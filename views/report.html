@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Expense Report</title>
+</head>
+<body>
+    <div>
+        <h1 class="text-center">Files Downloaded history</h1>
+        <h2>Links</h2>
+        <ul id="filedownloaded">
+        </ul>
+    </div>
+    
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+
+<script>
+const linkdata = document.getElementById('filedownloaded');
+const token = localStorage.getItem('token');
+const apiUrl="http://localhost:3000";
+;
+document.addEventListener('DOMContentLoaded',async()=>{
+try{
+await axios.get(`${apiUrl}/fileHistory`,{ headers: { "Authorization": token } })
+.then((res)=>{
+    let count = 1;
+    res.data.forEach((item)=>{
+        const li = document.createElement("li");
+        li.setAttribute("class","list-group-item");
+        li.innerHTML = `${count}:<a href="${item.link}">Report Dated - ${item.updatedAt.slice(0,10)}</a>`;
+        linkdata.appendChild(li);
+        count++;
+    })
+}).catch((e)=>{
+    console.log(e)
+})
+}catch(err){
+    console.log(err);
+}
+
+})
+</script>
+</html>

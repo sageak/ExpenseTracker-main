@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Sign Up</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info bg-gradient text-white">
+                    <h4>Sign Up</h4>
+                </div>
+                <div class="card-body">
+                    <form id="myform" action="/Signup" method="post">
+                        <div id="msg"></div>
+                        <div class="form-group">
+                            <label for="name">Name:</label>
+                            <input type="text" class="form-control" id="name" placeholder="Enter your name" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control" id="email" placeholder="Enter your email" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="password">Password:</label>
+                            <input type="password" class="form-control" id="password" placeholder="Enter your password" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-info btn-block" onclick="createUser()">Sign Up</button>
+                        <a href="/login">Existing User-LogIn</a>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+
+ function createUser(){
+        const myform=document.getElementById('myform');
+       const name=document.getElementById('name').value;
+       const email=document.getElementById('email').value;
+       const password=document.getElementById('password').value;
+       const msg=document.getElementById('msg');
+    //    if(name== '' || email=='' || password== '' )
+    //    {
+    //       msg.innerHTML="Enter all fields are Mandatory";
+    //    }
+    axios.post('http://localhost:3000/Signup',{
+        name:name,
+        email:email,
+        password:password
+    },).then(()=>{
+        console.log('Sign up successfull');
+        window.location.href="/login";
+    }).catch((err)=>console.log(error));
+    }
+
+</script>
+</body>
+</html>

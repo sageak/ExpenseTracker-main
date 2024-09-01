@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+    <title>Expense Tracker</title>
+</head>
+
+<body>
+    <header id="main-header" class="bg-info text-center p-4 mb-3">
+        <h1>Expense Tracker</h1>
+    </header>
+    <nav id="navbar">
+      <button class="btn btn-info" id="premiumBtn">buy premium</button>
+      <button class="btn btn-danger" type="submit" id="logoutBtn">Logout</button>
+    </nav>
+    <hr>
+    <form id="my-form" onsubmit="onSubmit(event)" class="form-inline mb-3">
+    <div class="container">
+        <div id="msg">    
+        </div>
+        <div class="row g-4">
+          <div class="col-md-4">
+            <label>Expense Amount:</label>
+          <input type="number" id="amount" name="amount" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label>Expense Description:</label>
+            <input type="text"  id="Description" name="Description" class="form-control">
+          </div>
+          <div class="col-md-4">
+            <label>Category:</label>
+            <select id="SelectCat" class="form-select " name="Category">
+                <option value="">Select Category</option>
+                <option value="Movie">Movie</option>
+                <option value="Food">Food</option>
+                <option value="Electricity">Electricity</option>
+                <option value="Recharge">Recharge</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="text" id="expenseId" name="expenseId" hidden class="form-control">
+          </div>
+          <div class="col-md-4">
+            <input type="submit" class="btn btn-info" id="btn" value="Add Expense" >
+
+           </div>
+        </div>
+    </div>
+</form>
+<!-- <button class="btn btn-info" id="leaderBoardBtn">Show LeaderBoard</button> -->
+<hr>
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+<div class="container">
+  <div class ="row g-4">
+  <div class="col-md-6"><h2>Expense List</h2>
+  <div class="contain" id="expenseList"></div>
+  <div class="pagination-container" id="expense-pagination-container">
+    <button type="submit" id="prevExpensePageButton">&lt;</button>
+    <span id="currentExpensePage"></span>
+    <button type="submit" id="nextExpensePageButton">&gt;</button>
+  </div>
+</div>
+<div class="col-md-6">
+  <div class="leaderboard-pagination-container" id="leaderboard">
+  <div class="list-group" id="leaderboard-data"></div>
+  <div
+    class="pagination-container"
+    id="leaderboard-pagination-container"
+  ></div>
+</div>
+</div>
+</div>
+</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+  <script>
+ 
+    const apiUrl="http://localhost:3000";
+    const form = document.querySelector('#my-form');
+      const AmountIN = document.querySelector('#amount');
+      const Description = document.querySelector('#Description');
+      const Category = document.querySelector('#SelectCat');
+      const expenseList = document.querySelector('#expenseList');
+      const isPremium = localStorage.getItem("isPremium");
+      const prevExpensePageButton = document.getElementById("prevExpensePageButton");
+      const nextExpensePageButton = document.getElementById("nextExpensePageButton");
+      const currentPageSpan = document.getElementById("currentExpensePage");
+      const token = localStorage.getItem("token");
+      const navbar=document.getElementById("navbar");
+      let isUpdating = false;
+       const logout = () => {
+  localStorage.removeItem("token");
+  localStorage.removeItem("isPremium");
+  localStorage.removeItem("rzp_checkout_anon_id");
+  localStorage.removeItem("rzp_device_id");
+  window.location.href = `/`;
+};
+document.getElementById("logoutBtn").addEventListener("click", logout);
+
+  function parseJwt (token) {
+    var base64Url = token.split('.')[1];
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    var jsonPayload = decodeURIComponent(window.atob(base64).split('').map(function(c) {
+        return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+
+    return JSON.parse(jsonPayload);
+}   
+
+document.addEventListener('DOMContentLoaded',async()=>{
+  await loadExpense();
+  const token=localStorage.getItem('token');
+  const decodeToken=parseJwt(token);
+  console.log("Decode Token:"+Object.values(decodeToken));
+  const ispremimum=decodeToken.ispremiumuser;
+  const userId=decodeToken.userId;
+  if(ispremimum){
+          document.getElementById('premiumBtn').style.visibility='hidden';
+          document.getElementById('msg').innerHTML='You are a Premium Member';
+          ShowLeaderBoard();
+  }
+                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             
+});         
+let currentPage = 1;         
+async function loadExpense(page = 1){           
+  try{       
+    const token=localStorage.getItem('token');
+    const expenseList = document.getElementById("expenseList");
+
+  await axios.get(`${apiUrl}/showExpense?page=${page}`,{ headers:{"Authorization": token}})
+  .then(async(response)=>{
+    // const data = await response.json();
+    const expenses = response.data.expenses;
+   console.log('expenses list:',expenses);
+    expenseList.innerHTML = "";
+
+    expenses.forEach((expense) => {
+      const expenseItem = document.createElement("div");
+      expenseItem.innerHTML = `
+        <div class="expense-item mb-3">
+          <table class="table">                                                                                                                                   
+          <tr>
+          <td ><b>Name:</b>${expense.description}</td>
+          <td><b>Quantity:</b> ${expense.category} </td>
+          <td><b>Amount:</b> ${expense.Amount} </td>
+          <td><button data-expense-id="${expense.id}" class="update-button btn btn-info">Update</button></td>
+          <td><button class="delete-button btn btn-danger" data-expense-id="${expense.id}" >Delete</button></td>
+           </tr>
+          </table>
+        </div>
+      `;
+      expenseList.appendChild(expenseItem);
+    });
+    updatePagination(response.data);
+  })
+  } catch (err) {
+    console.log("Error Occurred while fetching data", err);
+  }
+}
+prevExpensePageButton.addEventListener("click", () => {
+  if (currentPage > 1) {
+    currentPage--;
+    loadExpense(currentPage);
+  }
+});
+
+nextExpensePageButton.addEventListener("click", () => {
+  currentPage++;
+  loadExpense(currentPage);
+});
+
+function updatePagination(data) {
+  
+  if (data && data.totalPAges >= 1) {
+    console.log("pagesstatus",currentPage === 1);
+    prevExpensePageButton.disabled = currentPage === 1;
+    nextExpensePageButton.disabled = currentPage === data.totalPAges;
+
+    currentPageSpan.innerText = `Page ${currentPage} of ${data.totalPAges}`;
+  } else {
+    currentPageSpan.innerText = `Page 1 of 1`;
+  }
+}
+expenseList.addEventListener("click", async (e) => {
+  if (e.target && e.target.matches("button.delete-button")) {
+    console.log("delete clicked ");
+    const expenseId = e.target.getAttribute("data-expense-id");
+    await deleteExpense(expenseId);
+  }
+});
+
+expenseList.addEventListener("click", async (e) => {
+  if (e.target && e.target.matches("button.update-button")) {
+    const expenseId = e.target.getAttribute("data-expense-id");
+    const token = localStorage.getItem('token');
+    try {
+      const response = await axios.get(`${apiUrl}/expenses/${expenseId}`,{ headers:{"Authorization": token}});
+      if (response) {
+        const expenseItem = await response.data;
+       // console.log("expense details",expenseItem);
+        form.querySelector("#Description").value = expenseItem.description;
+        form.querySelector("#SelectCat").value = expenseItem.category;
+        form.querySelector("#amount").value = expenseItem.Amount;
+        form.querySelector("#expenseId").value = expenseItem.id;
+        form.querySelector("#btn").value = "Update";
+         isUpdating = true;
+    
+      } else {
+        if (response.status === 404) {
+          console.error("Expense not found:", response.statusText);
+        }
+      }
+    } catch (error) {
+      console.error("error fetching expense details:", error);
+    }
+  }
+});
+
+async function onSubmit(e){
+          e.preventDefault();
+          const token = localStorage.getItem('token');
+          const decodeToken=parseJwt(token);
+          const userId=decodeToken.userId;
+          const submitButton=document.querySelector('#btn');
+          // console.log("userID"+userId)
+          // console.log(submitButton);
+          const expense={
+            Amount: e.target.amount.value,
+            description: e.target.Description.value,
+            category: e.target.SelectCat.value,
+            userId:userId,
+            expenseId: e.target.expenseId.value
+          }
+          try {
+            if (isUpdating) {
+             const expenseId =  e.target.expenseId.value;
+             console.log("updateing expense id",expenseId);
+            const response = await axios.put(`${apiUrl}/expenses/${expenseId}`,expense,{ 
+             headers:{"Authorization": token},
+             });
+         if (response) {
+            isUpdating = false;
+           form.reset();
+           loadExpense();
+           form.querySelector("#btn").value = "Add Expense";
+      } else {
+        console.log("error updating expense", response.statusText);
+      }
+    } else {
+        const response = await axios.post(`${apiUrl}/addExpense`, expense,{ headers:{"Authorization": token}});
+        const ExpenseList = document.getElementById('expenseList');
+        while (ExpenseList.firstChild) {
+            ExpenseList.removeChild(ExpenseList.firstChild);
+        }
+        form.reset();
+        await loadExpense();
+    }
+   }
+    catch (error) {
+        console.log(error);
+    }
+      }
+
+    async function deleteExpense(expenseId){
+      try{
+        const token = localStorage.getItem('token');
+        const config={ headers:{"Authorization": token}};
+        await axios.delete(`${apiUrl}/delExpense/${expenseId}`,config).then(async()=>{
+          await loadExpense();
+        })
+        // const ExpenseList = document.getElementById('expenseList');
+        // while (ExpenseList.firstChild) {
+        //     ExpenseList.removeChild(ExpenseList.firstChild);
+        // } 
+      }catch(error){
+        console.error(error);
+      }
+    }
+
+document.getElementById('premiumBtn').onclick = async function (e) {
+  const token = localStorage.getItem('token');
+  
+  try {
+    const response = await axios.get(`${apiUrl}/purchase/premimummember`, { headers: { "Authorization": token } });
+    var options = {
+      "key": response.data.key_id,
+      "order_id": response.data.id,
+      "handler": async function (rzpResponse) {
+        console.log('Razorpay Response:', rzpResponse);
+        // console.log('Razorpay Options order id:', razorpay_payment_id);
+        // Check if payment_id is available in rzpResponse
+        if (rzpResponse  && rzpResponse.razorpay_payment_id) {
+          await axios.post(`${apiUrl}/purchase/updatetransactionstatus`, {
+            order_id: response.data.order_id,
+            payment_id: rzpResponse.razorpay_payment_id
+          }, { headers: {"Authorization": token }}).then((res)=>{
+            document.getElementById('premiumBtn').style.visibility='hidden';
+          document.getElementById('msg').innerHTML='You are a Premium Member';
+          localStorage.setItem('token',res.data.token);
+          localStorage.setItem("isPremium", "true");
+          alert('You are a Premium Member now');
+          ShowLeaderBoard();
+          })
+        } else {
+          console.error('Payment failed. Payment details are missing.');
+          alert('Something went wrong with the payment.');
+        }
+      }
+    };
+
+    const rzp1 = new Razorpay(options);
+    rzp1.open();
+    e.preventDefault();
+
+    rzp1.on('paymentfailed', function (response) {
+  console.log('Razorpay Payment Failed:', response);
+  alert('Payment failed. Check the console for more information.');
+});
+  } catch (error) {
+    console.error('Error fetching Razorpay details:', error);
+    alert('Error fetching Razorpay details. Please try again later.');
+  }
+}
+function ShowLeaderBoard(){
+  // const leaderBoardBtn=document.createElement('input');
+  // leaderBoardBtn.type='button';
+  // leaderBoardBtn.value='Show LeaderBoard';
+  // leaderBoardBtn.className='btn btn-info';
+  // document.getElementById('navbar').appendChild(leaderBoardBtn);
+  // leaderBoardBtn.onclick=async function (e){
+  //   const token=localStorage.getItem('token');
+  //   const LeaderBoard = document.getElementById('leaderboard-data');
+  //   const header=document.createElement('h3');
+  //   header.appendChild(document.createTextNode('Leader Board'));
+  //   LeaderBoard.appendChild(header);
+  //   await axios.get(`${apiUrl}/premimum/showAllExpenses`,{ headers:{"Authorization": token}})
+  //   .then((response)=>{
+  //     response.data.forEach(element => {
+  //     const lbLi=document.createElement('li');
+  //   lbLi.className="list-group-item";
+  //   lbLi.appendChild(document.createTextNode(`Name:${element.name}  - Total Cost:${element.totalExpenses}`));
+  //   LeaderBoard.appendChild(lbLi);
+  //     })
+  //   })
+  // }
+  const leaderboardBtn = document.createElement("button");
+  const daily = document.createElement("button");
+  const monthly = document.createElement("button");
+  const yearly = document.createElement("button");
+  const report = document.createElement("button");
+  const downloadHistory = document.createElement("button");
+  const navbar=document.getElementById("navbar");
+  console.log(navbar);
+  leaderboardBtn.innerHTML = "LeaderBoard";
+  leaderboardBtn.setAttribute("id", "leaderBoardBtn");
+  daily.setAttribute("id","daily");
+  monthly.setAttribute("id","monthly");
+  yearly.setAttribute("id","yearly");
+  report.setAttribute("id","report");
+  downloadHistory.setAttribute("id","downloadHistory");
+
+  daily.className="btn btn-info";
+  monthly.className="btn btn-info";
+  yearly.className="btn btn-info";
+  report.className="btn btn-info";
+  downloadHistory.className="btn btn-info";
+  leaderboardBtn.className="btn btn-info";
+  daily.innerHTML = "Daily";
+  monthly.innerHTML = "Monthly";
+  yearly.innerHTML = "Yearly";
+  report.innerHTML = "Report";
+  downloadHistory.innerHTML = "File History";
+
+  const paragraph = document.createElement("h2");
+  paragraph.innerHTML = " Premium User";
+
+  navbar.removeChild(premiumBtn);
+  navbar.appendChild(paragraph);
+  navbar.appendChild(leaderboardBtn);
+  navbar.appendChild(daily);
+  navbar.appendChild(monthly);
+  navbar.appendChild(yearly);
+  navbar.appendChild(report);
+  navbar.appendChild(downloadHistory);
+  // console.log( navbar.appendChild(leaderboardBtn));
+
+  let leaderboard = "leaderboard";
+  let daily1 = "daily"
+  let month = "monthly";
+  let year = "yearly"
+  leaderboardreport(leaderboard, leaderboardBtn);
+  reportButton(daily1,daily);
+  reportButton(month,monthly);
+  reportButton(year,yearly);
+  report.addEventListener("click", async ()=>{
+    try{
+      await axios.get(`${apiUrl}/reportDownload`,{ headers: { "Authorization": token } })
+      .then((response)=>{
+        const link = document.createElement('a');
+        link.href= response.data.fileURL;
+        link.download = 'ExpenseReport.pdf';
+        link.click();
+      })
+    }catch(e){
+      console.log(e);
+    }
+  })
+  downloadHistory.addEventListener("click", async() => {
+    try{
+        // axios.get(`${apiUrl}/fileHistory`,{ headers: { "Authorization": token } })
+        window.location.href = `/report`;
+    }catch(e){
+      console.log(e);
+    }
+  })
+ }
+
+function leaderboardreport(duration , btn){
+    btn.addEventListener("click", async() =>{
+      console.log("leaderboard clicked button clicked"+duration);
+        try{
+           let result = await axios.get(`${apiUrl}/premimum/showAllExpenses`,{ headers:{"Authorization": token}})
+           let leaderboardData = document.getElementById("leaderboard-data");
+                while(leaderboardData.firstChild){
+                    leaderboardData.removeChild(leaderboardData.firstChild);
+                }
+                let count = 1;
+                let div=document.createElement("div");
+                div.innerHTML=`<h1>All Users Expenses</h1>`;
+                leaderboardData.appendChild(div);
+                result.data.forEach((res)=>{
+                    let li = document.createElement("li");
+                    li.className="list-group-item list-group-item-action";
+                    li.innerHTML = `${count}: ${res.name} --Total Expenses: ${res.totalExpenses}`;
+                    count++;
+                    leaderboardData.appendChild(li);
+               })
+       }catch(error){
+            console.log(error)
+         }
+    })
+}
+
+function reportButton(duration,btn) {
+  btn.addEventListener("click",async ()=> {
+    try{
+      let result = await axios.get(`${apiUrl}/${duration}`,{ headers:{"Authorization": token}} );
+      // result = await result.json();
+      
+      // let res=result;
+      console.log("result",result);
+      let leaderboardData = document.getElementById("leaderboard-data");
+
+      while(leaderboardData.firstChild){
+        leaderboardData.removeChild(leaderboardData.firstChild);
+      }
+      let count = 1;
+      result.data.forEach((res) => {
+        let li = document.createElement("li");
+        let formattedDate = new Date(res.updatedAt).toLocaleString();
+        li.innerHTML = `${count}: ${res.description} -- ${res.category} -- ${res.Amount} -- ${formattedDate}`;
+        count++;
+        leaderboardData.appendChild(li);
+      })
+    }catch(err){
+      console.log(err);
+    }
+  })
+}
+
+if (isPremium === "true") {
+  ShowLeaderBoard();
+  leaderboardreport();
+}
+  </script>
+</body>
+</html>

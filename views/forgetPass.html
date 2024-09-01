@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Login</title>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header bg-info bg-gradient text-white">
+                    <h4>Forget Password?</h4>
+                </div>
+                <div class="card-body">
+                    <form id="myform" onsubmit="forgotpassword(event)" method="post">
+                        <div id="msg"></div>
+                        <div class="form-group">
+                            <label for="email">Email:</label>
+                            <input type="email" class="form-control" id="email" name="email" placeholder="Enter your email" required>
+                        </div>
+
+                        <button type="submit" class="btn btn-info btn-block">
+                            submit
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.0.8/dist/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+
+async function forgotpassword(e){
+    e.preventDefault();
+    console.log("forget html user name",e.target.email);
+    const form = new FormData(e.target);
+
+    const userDetails = {
+        email: form.get("email"),
+    }
+    console.log("forget html user email",userDetails);
+    const token = localStorage.getItem('token');
+   await axios.post('http://localhost:3000/forgotpassword',userDetails,
+        { headers:{"Authorization": token}})
+        .then((response)=>{
+            if(response.status === 200){
+                alert('Mail Send Successfully Please check and reset Password by link provided in mail');
+                    window.location.href='/login';
+            // document.body.innerHTML += '<div style="color:red;">Mail Successfuly sent <div>'
+        } else {
+            throw new Error('Something went wrong!!!')
+        }
+    }).catch((error)=>console.log(error));
+    }
+
+</script>
+</body>
+</html>
